@@ -9,32 +9,28 @@ def main():
 =======
 
     def calculate_properties():
-        a = int(app.section_param1_entry.get())
-        b = int(app.section_param2_entry.get()) if app.section_param2_entry.get().isnumeric() else 0
-
-        # configure a state of output fields and clear the contents    
+        a = float(app.section_param1_entry.get())
+        b = float(app.section_param2_entry.get()) if app.section_param2_entry.get().isnumeric() else 0
         ls = [app.section_area_output, app.section_moix_output, app.section_moiy_output, app.section_smx_output, app.section_smy_output]
-        
+
+        # (1) configure a normal state of output fields and clear the contents 
+        # (2) calculate properties and fill the textbox content
+        # (3) change the state to disabled         
         for each in ls:
             each.configure(state='normal')
             each.delete('0.0', 'end')
-        
-        # calculate properties and fill the textbox content
-        if app.choice_var.get() == 0:
-            app.section_area_output.insert('0.0', f'{int(a * b)}')
-            app.section_moix_output.insert('0.0', f'{int(b * (a ** 3) / 12)}')
-            app.section_moiy_output.insert('0.0', f'{int(a * (b ** 3) / 12)}')
-            app.section_smx_output.insert('0.0', f'{int(((b * (a ** 3) / 12) * 2) / a)}')
-            app.section_smy_output.insert('0.0', f'{int(((a * (b ** 3) / 12) * 2) / b)}')
-        else:
-            app.section_area_output.insert('0.0', f'{int(int(pi) * (a ** 2))}')
-            app.section_moix_output.insert('0.0', f'{int(int(pi) * (a ** 4) / 4)}')
-            app.section_moiy_output.insert('0.0', f'{int(int(pi) * (a ** 4) / 4)}')
-            app.section_smx_output.insert('0.0', f'{int(((int(pi) * (a ** 4) / 4) * 2) / a)}')
-            app.section_smy_output.insert('0.0', f'{int(((int(pi) * (a ** 4) / 4) * 2) / a)}')
-            
-        # change the state to disabled
-        for each in ls:
+            if app.choice_var.get() == 0:
+                match each:
+                    case app.section_area_output: each.insert('0.0', f'{a * b:.4f}')
+                    case app.section_moix_output: each.insert('0.0', f'{b * (a ** 3) / 12:.4f}')
+                    case app.section_moiy_output: each.insert('0.0', f'{a * (b ** 3) / 12:.4f}')
+                    case app.section_smx_output: each.insert('0.0', f'{b * (a ** 2) / 6:.4f}')
+                    case app.section_smy_output: each.insert('0.0', f'{a * (b ** 2) / 6:.4f}') 
+            else:
+                match each:
+                    case app.section_area_output: each.insert('0.0', f'{pi * (a ** 2):.4f}')
+                    case app.section_moix_output | app.section_moiy_output: each.insert('0.0', f'{pi * (a ** 4) / 4:.4f}')
+                    case app.section_smx_output | app.section_smy_output: each.insert('0.0', f'{pi * (a ** 3) / 2:.4f}')
             each.configure(state='disabled')
 
     calculate_properties()
