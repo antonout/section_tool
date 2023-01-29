@@ -21,43 +21,18 @@ class Interface(ctk.CTk):
 
         # configure grid layout
         self.grid_columnconfigure((0, 5), weight=0)
-<<<<<<< HEAD
         self.grid_rowconfigure((0, 5), weight=0)
 
-=======
-        self.grid_rowconfigure((0, 5), weight=0) 
-        
-        # create radiobutton control variable and input defaults (var3 for disabled entry)
-        self.choice_var = tk.IntVar()     
-        self.var1 = ctk.StringVar(value='0')
-        self.var2 = ctk.StringVar(value='0')
-        self.var3 = ctk.StringVar(value='')
-        '''        
-        @property
-        def var1(self):
-            return self._var1  
-            
-        @var1.setter
-        def var1(self, <to_input>):
-            if <to_input>.isnumeric() != True:
-                raise ValueError('Invalid inputs') 
-            self._var1 = self.var1
-        '''         
->>>>>>> dd9f41e (adjusted formulas, try to implement getter/setter for var1 and var2)
         # configure section choice frame (radiobutton frame)
         self.section_choice_frame = ctk.CTkFrame(self, width=200, height=200)
         self.section_choice_frame.grid(row=0, column=0, padx=10, pady=10, sticky='nw')
         self.section_choice_label = ctk.CTkLabel(master=self.section_choice_frame, text='Cross section shape')
         self.section_choice_label.grid(row=0, column=0, columnspan=2, padx=5, pady=0, sticky='')
-<<<<<<< HEAD
 
         self.choice_var = tk.IntVar()
         self.var1 = ctk.StringVar(value='1')
         self.var2 = ctk.StringVar(value='1')
 
-=======
-      
->>>>>>> dd9f41e (adjusted formulas, try to implement getter/setter for var1 and var2)
         def selected_param_entry():
             if self.choice_var.get() == 0:
                 self.section_param1_label.configure(text='Width =')
