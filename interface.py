@@ -8,11 +8,19 @@ ctk.set_default_color_theme("blue")
 
 
 class Interface(ctk.CTk):
-    def __init__(self):
+    def __init__(self, calculation='auto'):
         super().__init__()
         self.build_interface()
-        self.bind('<Button-1>', self.calculate_properties)
-        self.calculate_properties()
+        self.parse_param_entries()
+        self.calc_rectangle()
+        self.calc_circle()
+        self.fill_section_output_fields()
+        
+        self.calculation = calculation
+        if self.calculation == 'auto':
+            self.auto_calculation()
+        elif self.calculation == 'click': 
+            self.click_calculation()
 
     def build_interface(self):
         # configure window
@@ -30,10 +38,11 @@ class Interface(ctk.CTk):
         self.section_choice_label.grid(row=0, column=0, columnspan=2, padx=5, pady=0, sticky='')
 
         self.choice_var = tk.IntVar()
-        self.var1 = ctk.StringVar(value='1')
-        self.var2 = ctk.StringVar(value='1')
+        self.var1 = ctk.StringVar(value='0')
+        self.var2 = ctk.StringVar(value='0')
 
         def selected_param_entry():
+            # reconfigure the param entries for different section choice values
             if self.choice_var.get() == 0:
                 self.section_param1_label.configure(text='Width =')
                 self.section_param2_entry.configure(textvariable=self.var2, state='normal')
@@ -53,6 +62,7 @@ class Interface(ctk.CTk):
             command=selected_param_entry
         )
         self.rectangle_choice_btn.grid(row=1, column=0, padx=5, pady=0, sticky='n')
+        
         self.circle_choice_btn = ctk.CTkRadioButton(
             master=self.section_choice_frame,
             width=190,
@@ -77,6 +87,7 @@ class Interface(ctk.CTk):
             textvariable=self.var1
         )
         self.section_param1_entry.grid(row=4, column=1, padx=5, pady=5, sticky='')
+        
         self.section_param2_label = ctk.CTkLabel(master=self.section_param_frame, text='Height =')
         self.section_param2_label.grid(row=5, column=0, padx=5, pady=5, sticky='')
         self.section_param2_entry = ctk.CTkEntry(
@@ -100,7 +111,8 @@ class Interface(ctk.CTk):
             master=self.section_output_frame,
             width=122,
             height=18,
-            border_width=2
+            border_width=2,
+            state='disabled'
         )
         self.section_area_output.grid(row=1, column=2, padx=5, pady=5, sticky='n')
 
@@ -110,7 +122,8 @@ class Interface(ctk.CTk):
             master=self.section_output_frame,
             width=122,
             height=18,
-            border_width=2
+            border_width=2,
+            state='disabled'
         )
         self.section_moix_output.grid(row=2, column=2, padx=5, pady=5, sticky='n')
 
@@ -120,7 +133,8 @@ class Interface(ctk.CTk):
             master=self.section_output_frame,
             width=122,
             height=18,
-            border_width=2
+            border_width=2,
+            state='disabled'
         )
         self.section_moiy_output.grid(row=3, column=2, padx=5, pady=5, sticky='n')
 
@@ -130,7 +144,8 @@ class Interface(ctk.CTk):
             master=self.section_output_frame,
             width=122,
             height=18,
-            border_width=2
+            border_width=2,
+            state='disabled'
         )
         self.section_smx_output.grid(row=4, column=2, padx=5, pady=5, sticky='n')
 
@@ -140,60 +155,87 @@ class Interface(ctk.CTk):
             master=self.section_output_frame,
             width=122,
             height=18,
-            border_width=2
+            border_width=2,
+            state='disabled'
         )
         self.section_smy_output.grid(row=5, column=2, padx=5, pady=5, sticky='n')
-
-        # Update calculations as soon as the text field changes
-        self.var1.trace_add('write', self.calculate_properties)
-        self.var2.trace_add('write', self.calculate_properties)
-
-    def calculate_properties(self, *args, **kwargs):
+       
+    def parse_param_entries(self):
+        # parse the param etnry strings, convert to floats and return as tuple
         try:
-            a = int(self.section_param1_entry.get())
+            param1 = float(self.section_param1_entry.get())
         except ValueError:
-            a = 0
+            param1 = 1e-9
 
         try:
-            b = int(self.section_param2_entry.get())
+            param2 = float(self.section_param2_entry.get())
         except ValueError:
-            b = 0
+            param2 = 1e-9
+        
+        return (param1, param2)
 
-        if a == 0:
-            a = 1e-6  # trick to prevent ZeroDivisionError down the road
-        if b == 0:
-            b = 1e-6  # trick to prevent ZeroDivisionError down the road
+    def calc_rectangle(self):
+        # calculate rectangle section properties and return dict
+        b_x, h_y = self.parse_param_entries()
+        return {
+            'area': f'{b_x * h_y:.4f}', 
+            'moi_x': f'{b_x * (h_y ** 3) / 12:.4f}', 
+            'moi_y': f'{h_y * (b_x ** 3) / 12:.4f}', 
+            'sm_x': f'{b_x * (h_y ** 2) / 6:.4f}', 
+            'sm_y': f'{h_y * (b_x ** 2) / 6:.4f}'
+        }
 
-        # configure a state of output fields and clear the contents
-        self.section_area_output.configure(state='normal')
-        self.section_moix_output.configure(state='normal')
-        self.section_moiy_output.configure(state='normal')
-        self.section_smx_output.configure(state='normal')
-        self.section_smy_output.configure(state='normal')
+    def calc_circle(self):
+        # calculate circle section properties and return dict
+        r = self.parse_param_entries()[0]
+        return {
+            'area': f'{pi * (r ** 2):.4f}',
+            'moi_x': f'{pi * (r ** 4) / 4:.4f}', 
+            'moi_y': f'{pi * (r ** 4) / 4:.4f}', 
+            'sm_x': f'{pi * (r ** 3) / 2:.4f}', 
+            'sm_y': f'{pi * (r ** 3) / 2:.4f}'
+        }
 
-        self.section_area_output.delete('0.0', 'end')
-        self.section_moix_output.delete('0.0', 'end')
-        self.section_moiy_output.delete('0.0', 'end')
-        self.section_smx_output.delete('0.0', 'end')
-        self.section_smy_output.delete('0.0', 'end')
+    def fill_section_output_fields(self, *args):
+        # create a dict of dict with values assigned to corresponding radiobutton choice keys
+        # then use the dict of dict to fill the output text fields, note the state change
+        widget_params = {
+            self.section_area_output: {
+                'null': self.calc_rectangle()['area'],
+                'one': self.calc_circle()['area']  
+            },
+            self.section_moix_output: {
+                'null': self.calc_rectangle()['moi_x'],
+                'one': self.calc_circle()['moi_x']
+            }, 
+            self.section_moiy_output: {
+                'null': self.calc_rectangle()['moi_y'],
+                'one': self.calc_circle()['moi_y']
+            },
+            self.section_smx_output: {
+                'null': self.calc_rectangle()['sm_x'],
+                'one': self.calc_circle()['sm_x']
+            },
+            self.section_smy_output: {
+                'null': self.calc_rectangle()['sm_y'],
+                'one': self.calc_circle()['sm_y']
+            }
+        }
 
-        # calculate properties and fill the textbox content
-        if self.choice_var.get() == 0:
-            self.section_area_output.insert('0.0', f'{int(a * b)}')
-            self.section_moix_output.insert('0.0', f'{int(b * (a ** 3) / 12)}')
-            self.section_moiy_output.insert('0.0', f'{int(a * (b ** 3) / 12)}')
-            self.section_smx_output.insert('0.0', f'{int(((b * (a ** 3) / 12) * 2) / a)}')
-            self.section_smy_output.insert('0.0', f'{int(((a * (b ** 3) / 12) * 2) / b)}')
-        else:
-            self.section_area_output.insert('0.0', f'{int(int(pi) * (a ** 2))}')
-            self.section_moix_output.insert('0.0', f'{int(int(pi) * (a ** 4) / 4)}')
-            self.section_moiy_output.insert('0.0', f'{int(int(pi) * (a ** 4) / 4)}')
-            self.section_smx_output.insert('0.0', f'{int(((int(pi) * (a ** 4) / 4) * 2) / a)}')
-            self.section_smy_output.insert('0.0', f'{int(((int(pi) * (a ** 4) / 4) * 2) / a)}')
-
-        # change the state to disabled
-        self.section_area_output.configure(state='disabled')
-        self.section_moix_output.configure(state='disabled')
-        self.section_moiy_output.configure(state='disabled')
-        self.section_smx_output.configure(state='disabled')
-        self.section_smy_output.configure(state='disabled')
+        for (text_field, output) in widget_params.items():
+            text_field.configure(state='normal')
+            text_field.delete('0.0', 'end')
+            if self.choice_var.get() == 0:
+                text_field.insert('0.0', output['null'])
+            elif self.choice_var.get() == 1:
+                text_field.insert('0.0', output['one'])
+            text_field.configure(state='disabled')
+    
+    def auto_calculation(self):
+        # update section property fields as soon as the param entry text field changes
+        self.var1.trace_add('write', self.fill_section_output_fields)
+        self.var2.trace_add('write', self.fill_section_output_fields)
+    
+    def click_calculation(self):
+        # update section property fields on a mouse click
+        self.bind('<Button-1>', self.fill_section_output_fields)
