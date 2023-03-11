@@ -28,8 +28,8 @@ def main():
                 "area": f"{pi * (r ** 2):.4f}",
                 "moi_x": f"{pi / 4 * (r ** 4):.4f}",
                 "moi_y": f"{pi / 4 * (r ** 4):.4f}",
-                "sm_x": f"{pi / 2 * (r ** 3):.4f}",
-                "sm_y": f"{pi / 2 * (r ** 3):.4f}",
+                "sm_x": f"{pi / 4 * (r ** 3):.4f}",
+                "sm_y": f"{pi / 4 * (r ** 3):.4f}",
             }
 
         def calc_ring(self):
